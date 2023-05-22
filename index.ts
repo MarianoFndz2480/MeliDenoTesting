@@ -1,7 +1,5 @@
 import { Application, Router } from "https://deno.land/x/oak/mod.ts";
 
-const orders = [];
-
 const router = new Router();
 router
   .get("/hello-world", (context) => {
@@ -10,12 +8,18 @@ router
   .post("/new-orders", async (context) => {
     const value = await context.request.body().value;
     console.log("New Order: ", value);
-    context.response.body = value;
-    orders.push(value);
+    const response = await fetch('http://jukebox-dev.eba-h7emp7as.us-east-1.elasticbeanstalk.com/orders/meli-hook',{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(value),
+    });
+    const data = await response.json();
+    console.log("RESPONSE: ", data);
+    context.response.body = data;
+    context.response.status = 200
   })
-  .get("/orders", (context) => {
-    context.response.body = orders;
-  });
 
 const app = new Application();
 app.use(router.routes());
